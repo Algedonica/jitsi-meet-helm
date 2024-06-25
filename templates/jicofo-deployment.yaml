@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -c
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: jicofo
+  name: jicofo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: jicofo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -c
+        kompose.version: 1.32.0 (HEAD)
+      labels:
+        io.kompose.network/jitsi-meet.jitsi: "true"
+        io.kompose.service: jicofo
+    spec:
+      containers:
+        - env:
+            - name: SENTRY_DSN
+              value: '"0"'
+          image: jitsi/jicofo:stable-9457-2
+          name: jicofo
+          ports:
+            - containerPort: 8888
+              hostIP: 127.0.0.1
+              hostPort: 8888
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /config
+              name: jicofo-claim0
+      restartPolicy: Always
+      volumes:
+        - name: jicofo-claim0
+          persistentVolumeClaim:
+            claimName: jicofo-claim0
